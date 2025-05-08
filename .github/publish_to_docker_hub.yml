@@ -1,0 +1,38 @@
+name: Build and Push WordPress with Redis Image
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  # Allow manual trigger
+  workflow_dispatch:
+  # Optional: Schedule a regular build to ensure image stays up-to-date
+  # schedule:
+  #   - cron: '0 0 * * 0'  # Weekly on Sundays at midnight
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: cyface/wordpress-with-redis:latest
+          cache-from: type=registry,ref=cyface/wordpress-with-redis:buildcache
+          cache-to: type=registry,ref=cyface/wordpress-with-redis:buildcache,mode=max

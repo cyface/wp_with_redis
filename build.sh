@@ -1,0 +1,1 @@
+docker buildx build -t cyface/wordpress-redis:2 .
